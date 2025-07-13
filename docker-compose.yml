@@ -78,12 +78,9 @@ services:
     ports:
       - "8100:8100"
     depends_on:
-      mysqldb:
-        condition: service_healthy
-      eureka:
-        condition: service_started
-      config-server:
-        condition: service_started
+      - mysqldb
+      - eureka
+      - config-server
     environment:
       SPRING_APPLICATION_JSON: |
         {
@@ -113,6 +110,46 @@ services:
           "spring": {
             "config": {
               "import": "optional:configserver:http://config-server:8400"
+            }
+          }
+        }
+    stdin_open: true
+    tty: true
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "8400:8400"
+    depends_on:
+      - eureka
+      - config-server
+      - foyer-ms
+      - bloc-ms
+    environment:
+      SPRING_APPLICATION_JSON: |
+        {
+          "spring": {
+            "cloud": {
+              "gateway": {
+                "discovery": {
+                  "locator": {
+                    "enabled": true
+                  }
+                }
+              }
+            },
+            "config": {
+              "import": "optional:configserver:http://config-server:8400"
+            }
+          },
+          "eureka": {
+            "client": {
+              "service-url": {
+                "defaultZone": "http://eureka:8761/eureka/"
+              }
             }
           }
         }

@@ -3,7 +3,8 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copier le jar compilé (assure-toi que le nom correspond à ton build)
-COPY target/Foyer-ms-1.0.0.jar app.jar
+
+COPY target/Foyer-ms-0.0.1-SNAPSHOT.jar app.jar
 
 # Copier le script wait-for-it.sh dans le conteneur
 COPY wait-for-it.sh /wait-for-it.sh

@@ -1,0 +1,128 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    image: mysql:8.0.33
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: foyermsdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:5.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  eureka:
+    build:
+      context: ./Eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8400:8400"
+    depends_on:
+      - eureka
+    environment:
+      SPRING_APPLICATION_JSON: |
+        {
+          "eureka": {
+            "client": {
+              "service-url": {
+                "defaultZone": "http://eureka:8761/eureka/"
+              },
+              "register-with-eureka": true,
+              "fetch-registry": true
+            }
+          },
+          "spring": {
+            "cloud": {
+              "config": {
+                "server": {
+                  "git": {
+                    "uri": "https://github.com/chaima000/Projet-ms-config.git",
+                    "clone-on-start": true
+                  }
+                }
+              }
+            }
+          }
+        }
+
+  foyer-ms:
+    build:
+      context: ./Foyer-ms
+      dockerfile: Dockerfile
+    container_name: foyer-ms
+    ports:
+      - "8100:8100"
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+      config-server:
+        condition: service_started
+    environment:
+      SPRING_APPLICATION_JSON: |
+        {
+          "spring": {
+            "config": {
+              "import": "optional:configserver:http://config-server:8400"
+            }
+          }
+        }
+    volumes:
+      - ./Foyer-ms/wait-for-it.sh:/wait-for-it.sh
+    stdin_open: true
+    tty: true
+
+  bloc-ms:
+    build:
+      context: ./Bloc-ms
+      dockerfile: Dockerfile
+    container_name: bloc-ms
+    ports:
+      - "8200:8200"
+    depends_on:
+      - mongodb
+      - eureka
+      - config-server
+    environment:
+      SPRING_APPLICATION_JSON: |
+        {
+          "spring": {
+            "config": {
+              "import": "optional:configserver:http://config-server:8400"
+            }
+          }
+        }
+    volumes:
+      - ./Bloc-ms/wait-for-it.sh:/wait-for-it.sh
+    stdin_open: true
+    tty: true
+
+volumes:
+  db_data:
+  mongo_data:

@@ -122,7 +122,7 @@ services:
       dockerfile: Dockerfile
     container_name: gateway
     ports:
-      - "8400:8400"
+      - "8300:8300"
     depends_on:
       - eureka
       - config-server

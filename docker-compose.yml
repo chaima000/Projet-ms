@@ -25,6 +25,11 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   eureka:
     build:
@@ -34,6 +39,11 @@ services:
     ports:
       - "8761:8761"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   config-server:
     build:
@@ -43,7 +53,8 @@ services:
     ports:
       - "8400:8400"
     depends_on:
-      - eureka
+      eureka:
+        condition: service_healthy
     environment:
       SPRING_APPLICATION_JSON: |
         {
@@ -69,6 +80,11 @@ services:
             }
           }
         }
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8400/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   foyer-ms:
     build:
@@ -81,9 +97,9 @@ services:
       mysqldb:
         condition: service_healthy
       eureka:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_APPLICATION_JSON: |
         {
@@ -95,6 +111,11 @@ services:
         }
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   bloc-ms:
     build:
@@ -104,9 +125,12 @@ services:
     ports:
       - "8200:8200"
     depends_on:
-      - mongodb
-      - eureka
-      - config-server
+      mongodb:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     environment:
       SPRING_APPLICATION_JSON: |
         {
@@ -118,6 +142,11 @@ services:
         }
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   db_data:

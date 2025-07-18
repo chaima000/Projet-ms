@@ -86,7 +86,7 @@ public class FoyerserviceImpl implements FoyerService {
         for (String blocId : blocIds) {
             try {
                 //Vérifie que le bloc existe dans Bloc-MS
-                Bloc bloc = restTemplate.getForObject("http://localhost:8200/blocs/" + blocId, Bloc.class);
+                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs/" + blocId, Bloc.class);
 
                 // Vérifie que ce bloc n'est pas déjà ajouté au même foyer
                 if (validatedBlocs.contains(blocId)) {

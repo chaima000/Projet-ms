@@ -22,7 +22,7 @@ public class FoyerserviceImpl implements FoyerService {
     private final RestTemplate restTemplate;
     private final FoyerRepository repository;
 
-    // Name used in Resilience4j config
+    // Nom utilisé dans la configuration Resilience4j
     private static final String BLOC_SERVICE = "blocService";
 
     public FoyerserviceImpl(RestTemplate restTemplate, FoyerRepository repository) {
@@ -33,7 +33,8 @@ public class FoyerserviceImpl implements FoyerService {
     @Override
     @CircuitBreaker(name = BLOC_SERVICE, fallbackMethod = "fallbackGetBlocsFromBlocService")
     public List<Bloc> getBlocsFromBlocService() {
-        String url = "http://bloc-ms:8200/blocs"; // <== Docker service name (important!)
+        // Note : PAS de port dans l'URL, on utilise juste le service name Eureka
+        String url = "http://bloc-ms/blocs";
         ResponseEntity<List<Bloc>> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -85,8 +86,8 @@ public class FoyerserviceImpl implements FoyerService {
 
         for (String blocId : blocIds) {
             try {
-                // Use Docker internal DNS name for bloc-ms
-                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs/" + blocId, Bloc.class);
+                // Pas de port non plus ici
+                Bloc bloc = restTemplate.getForObject("http://bloc-ms/blocs/" + blocId, Bloc.class);
 
                 if (!validatedBlocs.contains(blocId)) {
                     validatedBlocs.add(blocId);

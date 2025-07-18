@@ -32,7 +32,7 @@ public class FoyerserviceImpl implements FoyerService {
     @Override
     @CircuitBreaker(name = BLOC_SERVICE, fallbackMethod = "fallbackGetBlocsFromBlocService")
     public List<Bloc> getBlocsFromBlocService() {
-        String url = "http://localhost:8200/blocs";
+        String url = "http://192.168.56.10:8200/blocs";
         ResponseEntity<List<Bloc>> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -86,7 +86,7 @@ public class FoyerserviceImpl implements FoyerService {
         for (String blocId : blocIds) {
             try {
                 //Vérifie que le bloc existe dans Bloc-MS
-                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs/" + blocId, Bloc.class);
+                Bloc bloc = restTemplate.getForObject("http://192.168.56.10:8200/blocs/" + blocId, Bloc.class);
 
                 // Vérifie que ce bloc n'est pas déjà ajouté au même foyer
                 if (validatedBlocs.contains(blocId)) {

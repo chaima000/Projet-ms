@@ -21,6 +21,8 @@ public class FoyerserviceImpl implements FoyerService {
 
     private final RestTemplate restTemplate;
     private final FoyerRepository repository;
+
+    // Name used in Resilience4j config
     private static final String BLOC_SERVICE = "blocService";
 
     public FoyerserviceImpl(RestTemplate restTemplate, FoyerRepository repository) {
@@ -28,11 +30,10 @@ public class FoyerserviceImpl implements FoyerService {
         this.repository = repository;
     }
 
-    // Circuit Breaker fallback si erreur ou service bloc indisponible
     @Override
     @CircuitBreaker(name = BLOC_SERVICE, fallbackMethod = "fallbackGetBlocsFromBlocService")
     public List<Bloc> getBlocsFromBlocService() {
-        String url = "http://192.168.56.10:8200/blocs";
+        String url = "http://bloc-ms:8200/blocs"; // <== Docker service name (important!)
         ResponseEntity<List<Bloc>> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -42,7 +43,6 @@ public class FoyerserviceImpl implements FoyerService {
         return response.getBody();
     }
 
-    // Méthode fallback renvoyant liste vide et log d’erreur
     public List<Bloc> fallbackGetBlocsFromBlocService(Throwable t) {
         System.out.println("Bloc service unreachable, fallback triggered: " + t.getMessage());
         return Collections.emptyList();
@@ -85,22 +85,19 @@ public class FoyerserviceImpl implements FoyerService {
 
         for (String blocId : blocIds) {
             try {
-                //Vérifie que le bloc existe dans Bloc-MS
-                Bloc bloc = restTemplate.getForObject("http://192.168.56.10:8200/blocs/" + blocId, Bloc.class);
+                // Use Docker internal DNS name for bloc-ms
+                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs/" + blocId, Bloc.class);
 
-                // Vérifie que ce bloc n'est pas déjà ajouté au même foyer
-                if (validatedBlocs.contains(blocId)) {
-                    System.out.println("Bloc déjà affecté à ce foyer : " + blocId);
+                if (!validatedBlocs.contains(blocId)) {
+                    validatedBlocs.add(blocId);
                 } else {
-                    validatedBlocs.add(blocId); // Ajoute s’il est valide et unique
+                    System.out.println("Bloc déjà affecté à ce foyer : " + blocId);
                 }
-
             } catch (Exception e) {
                 System.out.println("Bloc introuvable ou erreur d'appel : " + blocId);
             }
         }
 
-        //  Création du foyer avec les blocs valides
         Foyer foyer = new Foyer();
         foyer.setNom(nomFoyer);
         foyer.setBlocIds(validatedBlocs);

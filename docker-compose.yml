@@ -87,6 +87,20 @@ services:
           "spring": {
             "config": {
               "import": "optional:configserver:http://config-server:8400"
+            },
+            "datasource": {
+              "url": "jdbc:mysql://mysqldb:3306/foyermsdb",
+              "username": "root",
+              "password": "root"
+            }
+          },
+          "eureka": {
+            "client": {
+              "service-url": {
+                "defaultZone": "http://eureka:8761/eureka/"
+              },
+              "register-with-eureka": true,
+              "fetch-registry": true
             }
           }
         }
@@ -110,6 +124,15 @@ services:
           "spring": {
             "config": {
               "import": "optional:configserver:http://config-server:8400"
+            }
+          },
+          "eureka": {
+            "client": {
+              "service-url": {
+                "defaultZone": "http://eureka:8761/eureka/"
+              },
+              "register-with-eureka": true,
+              "fetch-registry": true
             }
           }
         }
@@ -149,7 +172,9 @@ services:
             "client": {
               "service-url": {
                 "defaultZone": "http://eureka:8761/eureka/"
-              }
+              },
+              "register-with-eureka": true,
+              "fetch-registry": true
             }
           }
         }

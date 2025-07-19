@@ -174,19 +174,19 @@ services:
                     "enabled": true
                   }
                 }
-              },
-              "config": {
-                "import": "optional:configserver:http://config-server:8400"
               }
             },
-            "eureka": {
-              "client": {
-                "service-url": {
-                  "defaultZone": "http://eureka:8761/eureka/"
-                },
-                "register-with-eureka": true,
-                "fetch-registry": true
-              }
+            "config": {
+              "import": "optional:configserver:http://config-server:8400"
+            }
+          },
+          "eureka": {
+            "client": {
+              "service-url": {
+                "defaultZone": "http://eureka:8761/eureka/"
+              },
+              "register-with-eureka": true,
+              "fetch-registry": true
             }
           }
         }

@@ -95,6 +95,10 @@ services:
             }
           },
           "eureka": {
+            "instance": {
+              "hostname": "foyer-ms",
+              "prefer-ip-address": false
+            },
             "client": {
               "service-url": {
                 "defaultZone": "http://eureka:8761/eureka/"
@@ -127,6 +131,10 @@ services:
             }
           },
           "eureka": {
+            "instance": {
+              "hostname": "bloc-ms",
+              "prefer-ip-address": false
+            },
             "client": {
               "service-url": {
                 "defaultZone": "http://eureka:8761/eureka/"

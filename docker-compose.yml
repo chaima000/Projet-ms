@@ -124,6 +124,11 @@ services:
           "spring": {
             "config": {
               "import": "optional:configserver:http://config-server:8400"
+            },
+            "data": {
+              "mongodb": {
+                "uri": "mongodb://mongodb:27017/blocdb"
+              }
             }
           },
           "eureka": {

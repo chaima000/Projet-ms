@@ -34,7 +34,7 @@ public class FoyerserviceImpl implements FoyerService {
     @CircuitBreaker(name = BLOC_SERVICE, fallbackMethod = "fallbackGetBlocsFromBlocService")
     public List<Bloc> getBlocsFromBlocService() {
         // Note : PAS de port dans l'URL, on utilise juste le service name Eureka
-        String url = "http://192.168.56.10:8200/blocs/";
+        String url = "http://bloc-ms:8200/blocs";
         ResponseEntity<List<Bloc>> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -87,7 +87,7 @@ public class FoyerserviceImpl implements FoyerService {
         for (String blocId : blocIds) {
             try {
                 // Pas de port non plus ici
-                Bloc bloc = restTemplate.getForObject("http://192.168.56.10:8200/blocs/" + blocId, Bloc.class);
+                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs" + blocId, Bloc.class);
 
                 if (!validatedBlocs.contains(blocId)) {
                     validatedBlocs.add(blocId);

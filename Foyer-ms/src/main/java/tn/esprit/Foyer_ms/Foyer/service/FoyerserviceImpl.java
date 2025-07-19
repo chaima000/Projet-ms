@@ -32,8 +32,7 @@ public class FoyerserviceImpl implements FoyerService {
     @Override
     @CircuitBreaker(name = BLOC_SERVICE, fallbackMethod = "fallbackGetBlocsFromBlocService")
     public List<Bloc> getBlocsFromBlocService() {
-        // Use the Eureka service name with the port and proper URL path
-        String url = "http://bloc-ms:8200/blocs";
+        String url = "http://bloc-ms/blocs/";
         ResponseEntity<List<Bloc>> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -85,8 +84,8 @@ public class FoyerserviceImpl implements FoyerService {
 
         for (String blocId : blocIds) {
             try {
-                // Use proper URL with slash between path and id
-                Bloc bloc = restTemplate.getForObject("http://bloc-ms:8200/blocs/" + blocId, Bloc.class);
+                // ✅ Use Eureka service name without port and with slash
+                Bloc bloc = restTemplate.getForObject("http://bloc-ms/blocs/" + blocId, Bloc.class);
 
                 if (!validatedBlocs.contains(blocId)) {
                     validatedBlocs.add(blocId);
